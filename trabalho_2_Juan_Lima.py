@@ -8,7 +8,7 @@ from sklearn.linear_model import LinearRegression, SGDRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.linear_model import Ridge, Lasso
 from sklearn.ensemble import RandomForestRegressor
-
+from matplotlib import pyplot as plt
 
 conjunto_treino_df = pd.read_csv(
     "eel891-202002-trabalho-2/conjunto_de_treinamento.csv"
@@ -209,6 +209,7 @@ for item in pearson_dict_sorted:
 
 print()
 
+conjunto_treino_df.plot.scatter(x='preco', y='suites')
 #######################################################
 
 colunas = conjunto_treino_df.columns
@@ -267,28 +268,29 @@ x_teste = escalador.transform(x_teste)
 print('K  Resultado')
 print('--- ---------------')
 
-for k in range(1, 5):
+for k in range(1, 11):
 
-    pf = PolynomialFeatures(degree=k)
-    pf = pf.fit(x_treino)
-    x_treino_poly = pf.transform(x_treino)
-    x_teste_poly = pf.transform(x_teste)
+    # pf = PolynomialFeatures(degree=k)
+    # pf = pf.fit(x_treino)
+    # x_treino_poly = pf.transform(x_treino)
+    # x_teste_poly = pf.transform(x_teste)
 
     # regressor_linear = LinearRegression()
     # regressor_linear = regressor_linear.fit(x_treino_poly, y_treino)
+    # y_resposta_teste = regressor_linear.predict(x_teste_poly)
 
-    # regressor_ridge = Ridge(alpha=500, solver='lsqr')
+    # regressor_ridge = Ridge(alpha=600, solver='lsqr')
     # regressor_ridge = regressor_ridge.fit(x_treino_poly, y_treino)
     # regressor_ridge = regressor_ridge.fit(x_treino_poly, y_treino)
     # y_resposta_teste = regressor_ridge.predict(x_teste_poly)
 
-    # RF_regressor = RandomForestRegressor(n_estimators=k)
+    # RF_regressor = RandomForestRegressor(n_estimators=k, random_state=0)
     # RF_regressor.fit(x_treino, y_treino)
     # y_resposta_teste = RF_regressor.predict(x_teste)
 
     regressor_sgd = SGDRegressor(
         loss='squared_loss',
-        alpha=1.2,
+        alpha=0.6,
         penalty='l2',
         # tol=1e-5,
         max_iter=100000,
@@ -300,7 +302,12 @@ for k in range(1, 5):
     mse_out = mean_squared_error(y_teste, y_resposta_teste)
     rmse_out = math.sqrt(mse_out)
     r2_out = r2_score(y_teste, y_resposta_teste)
-    rmspe = np.sqrt(np.mean(np.square(((y_teste - y_resposta_teste) / y_teste)), axis=0))
+    rmspe = np.sqrt(
+                np.mean(
+                    np.square(((y_teste - y_resposta_teste) / y_teste)),
+                    axis=0
+                )
+            )
 
     print(' %3d %15.4f' % (k, rmspe))
 
@@ -314,13 +321,10 @@ conjunto_teste_df = pd.read_csv(
 
 Ids_teste = conjunto_teste_df['Id']
 
-#Dividindo em regioes politico administrativas de recife
-conjunto_teste_df['RPA'] = conjunto_teste_df['bairro'].map(dict_estados_regioes)
-
-# print('\nVerificar a quantidade de amostras em bairro:\n')
-# print(conjunto_teste_df['RPA'].value_counts())
-
-# print('\nOne-hot encoding regiao\n')
+# Dividindo em regioes politico administrativas de recife
+conjunto_teste_df['RPA'] = (
+    conjunto_teste_df['bairro'].map(dict_estados_regioes)
+)
 
 conjunto_teste_df = pd.get_dummies(
     conjunto_teste_df,
