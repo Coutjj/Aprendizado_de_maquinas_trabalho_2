@@ -50,13 +50,33 @@ conjunto_treino_df = conjunto_treino_df.drop(remover, axis=1)
 #Dividindo em regioes politico administrativas de recife
 
 dict_regioes = {
-    'RPA1': ['Boa Vista', 'Cabanga', 'Coelhos', 'Ilha do Leite', 'Ilha Joana Bezerra', 'Paissandu', 'Santo Amaro', 'Santo Antônio', 'São José', 'Soledade'],
-    'RPA2': ['Água Fria', 'Alto Santa Terezinha', 'Arruda', 'Beberibe', 'Bomba do Hemetério', 'Cajueiro', 'Campina do Barreto', 'Campo Grande', 'Encruzilhada', 'Fundão', 'Hipódromo', 'Linha do Tiro', 'Peixinhos', 'Ponto de Parada', 'Porto da Madeira', 'Rosarinho', 'Torreão'],
-    'RPA3': ['Aflitos', 'Alto do Mandu', 'Alto José Bonifácio', 'Alto José do Pinho', 'Apipucos', 'Brejo da Guabiraba', 'Brejo de Beberibe', 'Casa Amarela', 'Casa Forte', 'Córrego do Jenipapo', 'Derby', 'Dois Irmãos', 'Espinheiro', 'Graças', 'Guabiraba', 'Jaqueira', 'Macaxeira', 'Mangabeira', 'Monteiro', 'Morro da Conceição', 'Nova Descoberta', 'Parnamirim', 'Passarinho', 'Pau-Ferro', 'Poço da Panela', 'Santana', 'Sítio dos Pintos', 'Tamarineira', 'Vasco da Gama'],
-    'RPA4': ['Caxangá', 'Cidade Universitári', 'Cordeiro', 'Engenho do Meio', 'Ilha do Retiro', 'Iputinga', 'Madalena', 'Torre', 'Torrões', 'Várzea', 'Zumbi'],
-    'RPA5': ['Afogados', 'Areias', 'Barro', 'Bongi', 'Caçote', 'Coqueiral', 'Curado', 'Estância', 'Jardim São Paulo', 'Jiquiá', 'Mangueira', 'Mustardinha', 'San Martin', 'Sancho', 'Tejipió', 'Totó'],
-    'RPA6': ['Boa Viagem', 'Brasília Teimosa', 'Cohab', 'Ibura', 'Imbiribeira', 'Ipsep', 'Jordão', 'Pina', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+    'RPA1': ['Recife', 'Centro', 'Boa Vista', 'Cabanga', 'Coelhos', 'Ilha do Leite', 'Ilha Joana Bezerra', 'Paissandu', 'Sto Amaro', 'Sto Antonio', 'Antonio', 'S Jose', 'Soledade', 'Piedade'],
+    'RPA2': ['Agua Fria', 'Alto Santa Terezinha', 'Arruda', 'Beberibe', 'Bomba do Hemeterio', 'Cajueiro', 'Campina do Barreto', 'Campo Grande', 'Encruzilhada', 'Fundao', 'Hipodromo', 'Linha do Tiro', 'Peixinhos', 'Ponto de Parada', 'Porto da Madeira', 'Rosarinho', 'Torreao'],
+    'RPA3': ['Aflitos', 'Alto do Mandu', 'Alto Jose Bonifacio', 'Alto José do Pinho', 'Apipucos', 'Brejo da Guabiraba', 'Brejo de Beberibe', 'Casa Amarela', 'Casa Forte', 'Corrego do Jenipapo', 'Derby', 'Dois Irmaos', 'Espinheiro', 'Gracas', 'Guabiraba', 'Jaqueira', 'Macaxeira', 'Mangabeira', 'Monteiro', 'Morro da Conceição', 'Nova Descoberta', 'Parnamirim', 'Passarinho', 'Pau-Ferro', 'Poco', 'Poco da Panela', 'Santana', 'Sítio dos Pintos', 'Tamarineira', 'Vasco da Gama'],
+    'RPA4': ['Caxanga', 'Cid Universitaria', 'Cordeiro', 'Engenho do Meio', 'Ilha do Retiro', 'Iputinga', 'Madalena', 'Beira Rio', 'Torre', 'Prado', 'Torrões', 'Varzea', 'Zumbi'],
+    'RPA5': ['Afogados', 'Areias', 'Barro', 'Bongi', 'Caçote', 'Coqueiral', 'Curado', 'Estância', 'Jd S Paulo', 'Jiquia', 'Mangueira', 'Mustardinha', 'San Martin', 'Sancho', 'Tejipio', 'Toto'],
+    'RPA6': ['Boa Viagem', 'Setubal', 'Brasilia Teimosa', 'Cohab', 'Ibura', 'Imbiribeira', 'Lagoa do Araca' ,'Ipsep', 'Jordão', 'Pina']
 }
+
+dict_estados_regioes = dict()
+for rpa in dict_regioes:
+    for estado in dict_regioes[rpa]:
+        dict_estados_regioes[estado] = rpa
+
+conjunto_treino_df['RPA'] = conjunto_treino_df['bairro'].map(dict_estados_regioes)
+
+print('\nVerificar a quantidade de amostras em bairro:\n')
+print(conjunto_treino_df['RPA'].value_counts())
+
+print('\nOne-hot encoding regiao\n')
+
+conjunto_treino_df = pd.get_dummies(
+    conjunto_treino_df,
+    columns=['RPA'],
+    prefix='RPA'
+)
+
+print(conjunto_treino_df)
 
 colunas = conjunto_treino_df.columns
 
