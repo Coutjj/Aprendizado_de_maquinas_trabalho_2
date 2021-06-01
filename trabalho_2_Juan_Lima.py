@@ -44,8 +44,19 @@ for var_categorica in variaveis_categoricas:
     )
 
 print("\nDescartando variaveis desnecessarias\n")
-remover = ['tipo', 'bairro', 'tipo_vendedor', 'diferenciais', 'Id']
+remover = ['tipo', 'tipo_vendedor', 'diferenciais', 'Id']
 conjunto_treino_df = conjunto_treino_df.drop(remover, axis=1)
+
+#Dividindo em regioes politico administrativas de recife
+
+dict_regioes = {
+    'RPA1': ['Boa Vista', 'Cabanga', 'Coelhos', 'Ilha do Leite', 'Ilha Joana Bezerra', 'Paissandu', 'Santo Amaro', 'Santo Antônio', 'São José', 'Soledade'],
+    'RPA2': ['Água Fria', 'Alto Santa Terezinha', 'Arruda', 'Beberibe', 'Bomba do Hemetério', 'Cajueiro', 'Campina do Barreto', 'Campo Grande', 'Encruzilhada', 'Fundão', 'Hipódromo', 'Linha do Tiro', 'Peixinhos', 'Ponto de Parada', 'Porto da Madeira', 'Rosarinho', 'Torreão'],
+    'RPA3': ['Aflitos', 'Alto do Mandu', 'Alto José Bonifácio', 'Alto José do Pinho', 'Apipucos', 'Brejo da Guabiraba', 'Brejo de Beberibe', 'Casa Amarela', 'Casa Forte', 'Córrego do Jenipapo', 'Derby', 'Dois Irmãos', 'Espinheiro', 'Graças', 'Guabiraba', 'Jaqueira', 'Macaxeira', 'Mangabeira', 'Monteiro', 'Morro da Conceição', 'Nova Descoberta', 'Parnamirim', 'Passarinho', 'Pau-Ferro', 'Poço da Panela', 'Santana', 'Sítio dos Pintos', 'Tamarineira', 'Vasco da Gama'],
+    'RPA4': ['Caxangá', 'Cidade Universitári', 'Cordeiro', 'Engenho do Meio', 'Ilha do Retiro', 'Iputinga', 'Madalena', 'Torre', 'Torrões', 'Várzea', 'Zumbi'],
+    'RPA5': ['Afogados', 'Areias', 'Barro', 'Bongi', 'Caçote', 'Coqueiral', 'Curado', 'Estância', 'Jardim São Paulo', 'Jiquiá', 'Mangueira', 'Mustardinha', 'San Martin', 'Sancho', 'Tejipió', 'Totó'],
+    'RPA6': ['Boa Viagem', 'Brasília Teimosa', 'Cohab', 'Ibura', 'Imbiribeira', 'Ipsep', 'Jordão', 'Pina', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+}
 
 colunas = conjunto_treino_df.columns
 
@@ -86,30 +97,30 @@ x_teste = escalador.transform(x_teste)
 print('  K  Resultado')
 print(' --- ---------------')
 
-for k in range(1, 9):
-    # pf = PolynomialFeatures(degree=k)
+for k in range(1, 5):
+    pf = PolynomialFeatures(degree=k)
 
-    # pf = pf.fit(x_treino)
-    # x_treino_poly = pf.transform(x_treino)
-    # x_teste_poly = pf.transform(x_teste)
+    pf = pf.fit(x_treino)
+    x_treino_poly = pf.transform(x_treino)
+    x_teste_poly = pf.transform(x_teste)
 
     # regressor_linear = LinearRegression()
     # regressor_linear = regressor_linear.fit(x_treino_poly, y_treino)
 
-    # regressor_ridge = Ridge(alpha=1000)
-    # regressor_ridge = regressor_ridge.fit(x_treino_poly, y_treino)
+    regressor_ridge = Ridge(alpha=3200, solver='lsqr')
+    regressor_ridge = regressor_ridge.fit(x_treino_poly, y_treino)
 
-    regressor_sgd = SGDRegressor(
-        loss='squared_loss',
-        alpha=1.2,
-        penalty='l2',
-        # tol=1e-5,
-        max_iter=100000
-    )
+    # regressor_sgd = SGDRegressor(
+    #     loss='squared_loss',
+    #     alpha=1.2,
+    #     penalty='l2',
+    #     # tol=1e-5,
+    #     max_iter=100000
+    # )
 
-    regressor_sgd = regressor_sgd.fit(x_treino, y_treino)
+    regressor_ridge = regressor_ridge.fit(x_treino_poly, y_treino)
 
-    y_resposta_teste = regressor_sgd.predict(x_teste)
+    y_resposta_teste = regressor_ridge.predict(x_teste_poly)
 
     mse_out = mean_squared_error(y_teste, y_resposta_teste)
     rmse_out = math.sqrt(mse_out)
@@ -137,34 +148,32 @@ x_treino = escalador.transform(dados_treino)
 x_teste = escalador.transform(dados_teste)
 
 
-# pf = PolynomialFeatures(degree=1)
+pf = PolynomialFeatures(degree=1)
 
-# pf = pf.fit(x_treino)
-# x_treino_poly = pf.transform(x_treino)
-# x_teste_poly = pf.transform(x_teste)
+pf = pf.fit(x_treino)
+x_treino_poly = pf.transform(x_treino)
+x_teste_poly = pf.transform(x_teste)
 
 # regressor_linear = LinearRegression()
 # regressor_linear = regressor_linear.fit(x_treino_poly, dados_alvo)
 
-# regressor_ridge = Ridge(alpha=10000)
-# regressor_ridge = regressor_ridge.fit(x_treino_poly, dados_alvo)
+regressor_ridge = Ridge(alpha=3200, solver='lsqr')
+regressor_ridge = regressor_ridge.fit(x_treino_poly, dados_alvo)
 
-regressor_sgd = SGDRegressor(
-        loss='squared_loss',
-        alpha=1.2,
-        penalty='l2',
-        # tol=1e-5,
-        max_iter=100000
-    )
+# regressor_sgd = SGDRegressor(
+#         loss='squared_loss',
+#         alpha=1.2,
+#         penalty='l2',
+#         # tol=1e-5,
+#         max_iter=100000
+#     )
 
-regressor_sgd = regressor_sgd.fit(x_treino, dados_alvo)
-
-y_resposta_teste = regressor_sgd.predict(x_teste)
+y_resposta_teste = regressor_ridge.predict(x_teste_poly)
 
 # compondo dataframes
 resposta = pd.DataFrame(y_resposta_teste, columns=['preco'])
 resposta = pd.concat([Ids_teste, resposta], axis=1, join='inner')
 
-print(resposta)
+# print(resposta)
 
 resposta.to_csv('./resposta.csv', index=False)
