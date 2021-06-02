@@ -4,11 +4,12 @@ import numpy as np
 from scipy.stats import pearsonr
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, PolynomialFeatures
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression, SGDRegressor
+from sklearn.linear_model import LinearRegression, SGDRegressor, LogisticRegression
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.linear_model import Ridge, Lasso
 from sklearn.ensemble import RandomForestRegressor
 from matplotlib import pyplot as plt
+
 
 conjunto_treino_df = pd.read_csv(
     "eel891-202002-trabalho-2/conjunto_de_treinamento.csv"
@@ -224,12 +225,12 @@ remover = [
             'tipo_vendedor',
             # 'quartos',
             # 'suites',
-            # 'vagas',
+            'vagas',
             # 'area_util',
-            'area_extra',
+            # 'area_extra',
             'diferenciais',
             'churrasqueira',
-            'estacionamento',
+            # 'estacionamento',
             'piscina',
             'playground',
             'quadra',
@@ -237,21 +238,23 @@ remover = [
             's_jogos',
             's_ginastica',
             'sauna',
-            'vista_mar',
+            # 'vista_mar',
             # 'preco',
             'RPA_RPA1',
-            'RPA_RPA2',
-            'RPA_RPA3',
+            # 'RPA_RPA2',
+            # 'RPA_RPA3',
             'RPA_RPA4',
-            'RPA_RPA5',
+            # 'RPA_RPA5',
             'RPA_RPA6'
 ]
 
 conjunto_treino_df = conjunto_treino_df.drop(remover, axis=1)
 print(conjunto_treino_df)
 
-dados_treino = conjunto_treino_df.iloc[:, :-1].to_numpy()
-dados_alvo = conjunto_treino_df.iloc[:, -1].to_numpy()
+dados_treino = conjunto_treino_df.iloc[:, conjunto_treino_df.columns != 'preco'].to_numpy()
+dados_alvo = conjunto_treino_df.iloc[:, conjunto_treino_df.columns == 'preco'].to_numpy()
+dados_alvo = dados_alvo.ravel()
+
 
 x_treino, x_teste, y_treino, y_teste = train_test_split(
     dados_treino,
@@ -265,10 +268,14 @@ escalador.fit(x_treino)
 x_treino = escalador.transform(x_treino)
 x_teste = escalador.transform(x_teste)
 
+# scale.fit(x_treino)
+# x_treino = scale.transform(x_treino)
+# x_teste = scale.transform(x_teste)
+
 print('K  Resultado')
 print('--- ---------------')
 
-for k in range(1, 11):
+for k in range(1, 2):
 
     # pf = PolynomialFeatures(degree=k)
     # pf = pf.fit(x_treino)
@@ -279,8 +286,7 @@ for k in range(1, 11):
     # regressor_linear = regressor_linear.fit(x_treino_poly, y_treino)
     # y_resposta_teste = regressor_linear.predict(x_teste_poly)
 
-    # regressor_ridge = Ridge(alpha=600, solver='lsqr')
-    # regressor_ridge = regressor_ridge.fit(x_treino_poly, y_treino)
+    # regressor_ridge = Ridge(alpha=1000, solver='lsqr', random_state=0)
     # regressor_ridge = regressor_ridge.fit(x_treino_poly, y_treino)
     # y_resposta_teste = regressor_ridge.predict(x_teste_poly)
 
@@ -288,16 +294,26 @@ for k in range(1, 11):
     # RF_regressor.fit(x_treino, y_treino)
     # y_resposta_teste = RF_regressor.predict(x_teste)
 
-    regressor_sgd = SGDRegressor(
-        loss='squared_loss',
-        alpha=0.6,
-        penalty='l2',
-        # tol=1e-5,
-        max_iter=100000,
-        random_state=0
+    logreg = LogisticRegression(
+        # penalty='l1',
+        # random_state=0,
+        max_iter=500,
+        solver='liblinear'
     )
-    regressor_sgd.fit(x_treino, y_treino)
-    y_resposta_teste = regressor_sgd.predict(x_teste)
+    y_treino = y_treino.astype('int')
+    logreg = logreg.fit(x_treino, y_treino)
+    y_resposta_teste = logreg.predict(x_teste)
+
+    # regressor_sgd = SGDRegressor(
+    #     loss='squared_loss',
+    #     alpha=0.6,
+    #     penalty='l2',
+    #     # tol=1e-2,
+    #     max_iter=100000,
+    #     random_state=0
+    # )
+    # regressor_sgd.fit(x_treino, y_treino)
+    # y_resposta_teste = regressor_sgd.predict(x_teste)
 
     mse_out = mean_squared_error(y_teste, y_resposta_teste)
     rmse_out = math.sqrt(mse_out)
@@ -342,27 +358,40 @@ x_treino = escalador.transform(dados_treino)
 x_teste = escalador.transform(dados_teste)
 
 
-pf = PolynomialFeatures(degree=2)
+# pf = PolynomialFeatures(degree=2)
 
-pf = pf.fit(x_treino)
-x_treino_poly = pf.transform(x_treino)
-x_teste_poly = pf.transform(x_teste)
+# pf = pf.fit(x_treino)
+# x_treino_poly = pf.transform(x_treino)
+# x_teste_poly = pf.transform(x_teste)
 
 # regressor_linear = LinearRegression()
 # regressor_linear = regressor_linear.fit(x_treino_poly, dados_alvo)
 
-regressor_ridge = Ridge(alpha=3200, solver='lsqr')
-regressor_ridge = regressor_ridge.fit(x_treino_poly, dados_alvo)
+# regressor_ridge = Ridge(alpha=3200, solver='lsqr')
+# regressor_ridge = regressor_ridge.fit(x_treino_poly, dados_alvo)
+
+
+dados_alvo = dados_alvo.astype('int')
+logreg = LogisticRegression(
+        # penalty='l1',
+        # random_state=0,
+        max_iter=500,
+        solver='liblinear'
+    )
+logreg.fit(x_treino, dados_alvo)
+y_resposta_teste = logreg.predict(x_teste)
 
 # regressor_sgd = SGDRegressor(
 #         loss='squared_loss',
-#         alpha=1.2,
+#         alpha=0.6,
 #         penalty='l2',
-#         # tol=1e-5,
-#         max_iter=100000
+#         # tol=1e-2,
+#         max_iter=100000,
+#         random_state=0
 #     )
 
-y_resposta_teste = regressor_ridge.predict(x_teste_poly)
+# regressor_sgd = regressor_sgd.fit(x_treino, dados_alvo)
+# y_resposta_teste = regressor_sgd.predict(x_teste)
 
 # compondo dataframes
 resposta = pd.DataFrame(y_resposta_teste, columns=['preco'])
